@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>NEXUS — STEP Academy Emergency Response</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link
+		href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap"
+		rel="stylesheet">
+	<style>
+		:root {
+			--neon-blue: #00d4ff;
+			--neon-purple: #a855f7;
+			--neon-red: #ff3366;
+			--neon-green: #00ff88;
+			--neon-yellow: #ffcc00;
+			--bg-deep: #020408;
+			--bg-mid: #060d18;
+			--bg-card: rgba(0, 212, 255, 0.04);
+			--border-glow: rgba(0, 212, 255, 0.25);
+			--text-main: #e0f0ff;
+			--text-muted: #4a7a9b;
+			--text-dim: #1a3a5c;
+		}
+
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		html {
+			scroll-behavior: smooth;
+		}
+
+		body {
+			background: var(--bg-deep);
+			color: var(--text-main);
+			font-family: 'Exo 2', sans-serif;
+			font-weight: 300;
+			overflow-x: hidden;
+			cursor: none;
+		}
+
+		/* CURSOR */
+		.cursor {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 20px;
+			height: 20px;
+			border: 1px solid var(--neon-blue);
+			border-radius: 50%;
+			pointer-events: none;
+			z-index: 9999;
+			transform: translate(-50%, -50%);
+			transition: width 0.2s, height 0.2s;
+			mix-blend-mode: screen;
+		}
+
+		.cursor-dot {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 4px;
+			height: 4px;
+			background: var(--neon-blue);
+			border-radius: 50%;
+			pointer-events: none;
+			z-index: 9999;
+			transform: translate(-50%, -50%);
+			box-shadow: 0 0 8px var(--neon-blue);
+		}
+
+		/* SCANLINES overlay on top of everything */
+		.scanlines {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			z-index: 3;
+			pointer-events: none;
+			background: repeating-linear-gradient(0deg, transparent, transparent 3px,
+					rgba(0, 212, 255, 0.007) 3px, rgba(0, 212, 255, 0.007) 4px);
+		}
+
+		/* ==============================
+     HERO SECTION
+  ============================== */
+		.hero {
+			position: relative;
+			min-height: 100vh;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			text-align: center;
+			overflow: hidden;
+		}
+
+		/* Video background */
+		.hero-video-wrap {
+			position: absolute;
+			inset: 0;
+			z-index: 0;
+			background: #02060f;
+		}
+
+		.hero-video-wrap video {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			opacity: 0.55;
+		}
+
+		/* Fallback canvas shown when no video */
+		#bgCanvas {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			z-index: 1;
+		}
+
+		/* Cinematic overlays */
+		.hero-overlay-bottom {
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			height: 45%;
+			background: linear-gradient(0deg, var(--bg-deep) 0%, transparent 100%);
+			z-index: 2;
+			pointer-events: none;
+		}
+
+		.hero-overlay-top {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 30%;
+			background: linear-gradient(180deg, rgba(2, 4, 8, 0.7) 0%, transparent 100%);
+			z-index: 2;
+			pointer-events: none;
+		}
+
+		.hero-overlay-sides {
+			position: absolute;
+			inset: 0;
+			background: radial-gradient(ellipse at center, transparent 40%, rgba(2, 4, 8, 0.75) 100%);
+			z-index: 2;
+			pointer-events: none;
+		}
+
+		/* Chromatic aberration line at top */
+		.hero-chroma-line {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 2px;
+			background: linear-gradient(90deg, transparent, var(--neon-blue), var(--neon-purple), var(--neon-red), transparent);
+			z-index: 5;
+			opacity: 0.8;
+		}
+
+		/* Hero content */
+		.hero-content {
+			position: relative;
+			z-index: 4;
+			padding: 120px 32px 80px;
+			max-width: 900px;
+		}
+
+		.hero-eyebrow {
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 11px;
+			letter-spacing: 7px;
+			color: var(--neon-red);
+			text-transform: uppercase;
+			margin-bottom: 28px;
+			opacity: 0;
+			animation: fadeUp 0.8s ease forwards 0.4s;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 16px;
+		}
+
+		.hero-eyebrow-line {
+			width: 40px;
+			height: 1px;
+			background: linear-gradient(90deg, transparent, var(--neon-red));
+		}
+
+		.hero-eyebrow-line.right {
+			background: linear-gradient(90deg, var(--neon-red), transparent);
+		}
+
+		.hero-academy {
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 13px;
+			letter-spacing: 10px;
+			color: rgba(0, 212, 255, 0.6);
+			text-transform: uppercase;
+			margin-bottom: 10px;
+			opacity: 0;
+			animation: fadeUp 0.8s ease forwards 0.55s;
+		}
+
+		.hero-title {
+			font-family: 'Orbitron', monospace;
+			font-size: clamp(64px, 12vw, 120px);
+			font-weight: 900;
+			letter-spacing: -2px;
+			line-height: 0.9;
+			margin-bottom: 12px;
+			opacity: 0;
+			animation: fadeUp 0.8s ease forwards 0.7s;
+			position: relative;
+		}
+
+		.hero-title-main {
+			display: block;
+			color: var(--text-main);
+			text-shadow: 0 0 60px rgba(224, 240, 255, 0.15), 0 2px 0 rgba(0, 0, 0, 0.8);
+			position: relative;
+		}
+
+		/* Glitch */
+		.hero-title-main::before {
+			content: attr(data-text);
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			color: var(--neon-red);
+			clip-path: polygon(0 15%, 100% 15%, 100% 35%, 0 35%);
+			animation: glitch1 5s infinite;
+			opacity: 0;
+		}
+
+		.hero-title-main::after {
+			content: attr(data-text);
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			color: var(--neon-blue);
+			clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+			animation: glitch2 5s infinite;
+			opacity: 0;
+		}
+
+		@keyframes glitch1 {
+
+			0%,
+			85%,
+			100% {
+				opacity: 0;
+				transform: none
+			}
+
+			87% {
+				opacity: 0.9;
+				transform: translateX(-5px)
+			}
+
+			89% {
+				opacity: 0;
+				transform: none
+			}
+
+			91% {
+				opacity: 0.7;
+				transform: translateX(4px)
+			}
+
+			93% {
+				opacity: 0;
+			}
+		}
+
+		@keyframes glitch2 {
+
+			0%,
+			85%,
+			100% {
+				opacity: 0;
+				transform: none
+			}
+
+			88% {
+				opacity: 0.8;
+				transform: translateX(5px)
+			}
+
+			90% {
+				opacity: 0;
+				transform: none
+			}
+
+			92% {
+				opacity: 0.6;
+				transform: translateX(-4px)
+			}
+
+			94% {
+				opacity: 0;
+			}
+		}
+
+		.hero-title-sub {
+			display: block;
+			font-size: 0.38em;
+			letter-spacing: 14px;
+			color: transparent;
+			-webkit-text-stroke: 1px rgba(0, 212, 255, 0.35);
+			margin-top: 6px;
+		}
+
+		.hero-subtitle {
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 12px;
+			letter-spacing: 3px;
+			color: var(--text-muted);
+			margin: 32px auto 48px;
+			max-width: 460px;
+			line-height: 2;
+			opacity: 0;
+			animation: fadeUp 0.8s ease forwards 0.9s;
+		}
+
+		.hero-cta-row {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 16px;
+			opacity: 0;
+			animation: fadeUp 0.8s ease forwards 1.1s;
+		}
+
+		.hero-cta-primary {
+			padding: 16px 40px;
+			background: var(--neon-red);
+			border: none;
+			color: white;
+			font-family: 'Orbitron', monospace;
+			font-size: 12px;
+			font-weight: 700;
+			letter-spacing: 4px;
+			text-transform: uppercase;
+			cursor: pointer;
+			border-radius: 2px;
+			position: relative;
+			overflow: hidden;
+			transition: box-shadow 0.3s, transform 0.2s;
+			box-shadow: 0 0 30px rgba(255, 51, 102, 0.4);
+		}
+
+		.hero-cta-primary:hover {
+			box-shadow: 0 0 50px rgba(255, 51, 102, 0.7);
+			transform: translateY(-2px);
+		}
+
+		.hero-cta-secondary {
+			padding: 15px 32px;
+			background: transparent;
+			border: 1px solid rgba(0, 212, 255, 0.4);
+			color: var(--neon-blue);
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 11px;
+			letter-spacing: 3px;
+			text-transform: uppercase;
+			cursor: pointer;
+			border-radius: 2px;
+			transition: background 0.2s, border-color 0.2s;
+		}
+
+		.hero-cta-secondary:hover {
+			background: rgba(0, 212, 255, 0.08);
+			border-color: var(--neon-blue);
+		}
+
+		/* Stats row */
+		.hero-stats {
+			position: absolute;
+			bottom: 52px;
+			left: 0;
+			right: 0;
+			display: flex;
+			justify-content: center;
+			gap: 48px;
+			z-index: 4;
+			opacity: 0;
+			animation: fadeUp 0.8s ease forwards 1.3s;
+		}
+
+		.hero-stat {
+			text-align: center;
+		}
+
+		.hero-stat-num {
+			font-family: 'Orbitron', monospace;
+			font-size: 22px;
+			font-weight: 700;
+			color: var(--neon-blue);
+			text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+		}
+
+		.hero-stat-label {
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 9px;
+			letter-spacing: 3px;
+			color: var(--text-dim);
+			text-transform: uppercase;
+			margin-top: 4px;
+		}
+
+		.hero-stat-sep {
+			width: 1px;
+			background: rgba(0, 212, 255, 0.15);
+			align-self: stretch;
+		}
+
+		/* Scroll indicator */
+		.hero-scroll {
+			position: absolute;
+			bottom: 24px;
+			left: 50%;
+			transform: translateX(-50%);
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 9px;
+			letter-spacing: 4px;
+			color: var(--text-dim);
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 8px;
+			z-index: 4;
+			opacity: 0;
+			animation: fadeUp 1s ease forwards 1.6s;
+		}
+
+		.scroll-arrow {
+			width: 16px;
+			height: 16px;
+			border-right: 1px solid rgba(0, 212, 255, 0.3);
+			border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+			transform: rotate(45deg);
+			animation: scrollBounce 2s ease-in-out infinite;
+		}
+
+		@keyframes scrollBounce {
+
+			0%,
+			100% {
+				transform: rotate(45deg) translateY(0);
+				opacity: 0.3
+			}
+
+			50% {
+				transform: rotate(45deg) translateY(5px);
+				opacity: 1
+			}
+		}
+
+		/* ==============================
+     TOP BAR
+  ============================== */
+		.topbar {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			z-index: 100;
+			padding: 16px 40px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			background: linear-gradient(180deg, rgba(2, 4, 8, 0.92) 0%, transparent 100%);
+			border-bottom: 1px solid rgba(0, 212, 255, 0.08);
+		}
+
+		.topbar-logo {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+		.topbar-logo-mark {
+			font-family: 'Orbitron', monospace;
+			font-size: 20px;
+			font-weight: 900;
+			letter-spacing: 4px;
+			color: var(--neon-blue);
+			text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+		}
+
+		.topbar-logo-sep {
+			width: 1px;
+			height: 18px;
+			background: rgba(0, 212, 255, 0.2);
+		}
+
+		.topbar-logo-sub {
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 9px;
+			letter-spacing: 3px;
+			color: var(--text-muted);
+			text-transform: uppercase;
+		}
+
+		.topbar-right {
+			display: flex;
+			align-items: center;
+			gap: 24px;
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 11px;
+		}
+
+		.topbar-alert {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			color: var(--neon-red);
+			letter-spacing: 2px;
+		}
+
+		.status-dot {
+			width: 7px;
+			height: 7px;
+			border-radius: 50%;
+			background: var(--neon-red);
+			box-shadow: 0 0 10px var(--neon-red);
+			animation: statusPulse 1.2s ease-in-out infinite;
+		}
+
+		@keyframes statusPulse {
+
+			0%,
+			100% {
+				opacity: 1;
+				box-shadow: 0 0 10px var(--neon-red)
+			}
+
+			50% {
+				opacity: 0.3;
+				box-shadow: 0 0 3px var(--neon-red)
+			}
+		}
+
+		.topbar-time {
+			color: var(--neon-blue);
+			letter-spacing: 2px;
+			font-size: 13px;
+		}
+
+		/* ==============================
+     CONTENT BELOW HERO
+  ============================== */
+		.below-hero {
+			position: relative;
+			z-index: 2;
+			background: var(--bg-deep);
+		}
+
+		.wrapper {
+			max-width: 1100px;
+			margin: 0 auto;
+			padding: 0 32px;
+		}
+
+		.section-divider {
+			height: 1px;
+			background: linear-gradient(90deg, transparent, var(--border-glow), transparent);
+			position: relative;
+		}
+
+		.section-divider::before {
+			content: attr(data-label);
+			position: absolute;
+			top: -8px;
+			left: 50%;
+			transform: translateX(-50%);
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 10px;
+			letter-spacing: 4px;
+			color: var(--neon-blue);
+			background: var(--bg-deep);
+			padding: 0 16px;
+			text-transform: uppercase;
+		}
+
+		.form-section {
+			padding: 80px 0;
+		}
+
+		.section-tag {
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 10px;
+			letter-spacing: 5px;
+			color: var(--neon-blue);
+			text-transform: uppercase;
+			margin-bottom: 12px;
+			display: flex;
+			align-items: center;
+			gap: 12px;
+		}
+
+		.section-tag::after {
+			content: '';
+			flex: 1;
+			height: 1px;
+			background: linear-gradient(90deg, var(--border-glow), transparent);
+		}
+
+		.section-title {
+			font-family: 'Orbitron', monospace;
+			font-size: 28px;
+			font-weight: 700;
+			color: var(--text-main);
+			letter-spacing: 2px;
+			margin-bottom: 40px;
+		}
+
+		.form-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 20px;
+			margin-bottom: 20px;
+		}
+
+		.field-group {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		.field-group.full {
+			grid-column: 1 / -1;
+		}
+
+		.field-label {
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 10px;
+			letter-spacing: 3px;
+			color: var(--text-muted);
+			text-transform: uppercase;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+
+		.field-label-num {
+			color: var(--neon-blue);
+			font-size: 9px;
+		}
+
+		.field-input,
+		.field-select,
+		.field-textarea {
+			background: var(--bg-card);
+			border: 1px solid var(--border-glow);
+			border-radius: 2px;
+			padding: 14px 16px;
+			color: var(--text-main);
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 13px;
+			outline: none;
+			width: 100%;
+			transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+		}
+
+		.field-input:focus,
+		.field-select:focus,
+		.field-textarea:focus {
+			border-color: var(--neon-blue);
+			box-shadow: 0 0 20px rgba(0, 212, 255, 0.1), inset 0 0 20px rgba(0, 212, 255, 0.03);
+			background: rgba(0, 212, 255, 0.06);
+		}
+
+		.field-input::placeholder,
+		.field-textarea::placeholder {
+			color: var(--text-dim);
+		}
+
+		.field-select {
+			appearance: none;
+			cursor: pointer;
+		}
+
+		.field-select option {
+			background: #060d18;
+			color: var(--text-main);
+		}
+
+		.field-textarea {
+			resize: none;
+			min-height: 140px;
+			line-height: 1.7;
+		}
+
+		.threat-selector {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 10px;
+			margin-bottom: 20px;
+		}
+
+		.threat-btn {
+			padding: 10px 8px;
+			border-radius: 2px;
+			cursor: pointer;
+			text-align: center;
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 10px;
+			letter-spacing: 2px;
+			text-transform: uppercase;
+			transition: all 0.2s;
+			border: 1px solid;
+		}
+
+		.threat-btn.green {
+			border-color: rgba(0, 255, 136, 0.25);
+			color: rgba(0, 255, 136, 0.5);
+			background: rgba(0, 255, 136, 0.04);
+		}
+
+		.threat-btn.green.active,
+		.threat-btn.green:hover {
+			border-color: var(--neon-green);
+			color: var(--neon-green);
+			background: rgba(0, 255, 136, 0.1);
+			box-shadow: 0 0 16px rgba(0, 255, 136, 0.15);
+		}
+
+		.threat-btn.yellow {
+			border-color: rgba(255, 204, 0, 0.25);
+			color: rgba(255, 204, 0, 0.5);
+			background: rgba(255, 204, 0, 0.04);
+		}
+
+		.threat-btn.yellow.active,
+		.threat-btn.yellow:hover {
+			border-color: var(--neon-yellow);
+			color: var(--neon-yellow);
+			background: rgba(255, 204, 0, 0.1);
+			box-shadow: 0 0 16px rgba(255, 204, 0, 0.15);
+		}
+
+		.threat-btn.red {
+			border-color: rgba(255, 51, 102, 0.25);
+			color: rgba(255, 51, 102, 0.5);
+			background: rgba(255, 51, 102, 0.04);
+		}
+
+		.threat-btn.red.active,
+		.threat-btn.red:hover {
+			border-color: var(--neon-red);
+			color: var(--neon-red);
+			background: rgba(255, 51, 102, 0.1);
+			box-shadow: 0 0 16px rgba(255, 51, 102, 0.15);
+		}
+
+		.submit-row {
+			display: flex;
+			align-items: center;
+			gap: 20px;
+		}
+
+		.submit-btn {
+			flex: 1;
+			padding: 18px 32px;
+			background: transparent;
+			border: 1px solid var(--neon-blue);
+			color: var(--neon-blue);
+			font-family: 'Orbitron', monospace;
+			font-size: 13px;
+			font-weight: 700;
+			letter-spacing: 4px;
+			text-transform: uppercase;
+			cursor: pointer;
+			border-radius: 2px;
+			position: relative;
+			overflow: hidden;
+			transition: color 0.3s, box-shadow 0.3s;
+		}
+
+		.submit-btn::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: -100%;
+			width: 100%;
+			height: 100%;
+			background: var(--neon-blue);
+			transition: left 0.3s ease;
+			z-index: -1;
+		}
+
+		.submit-btn:hover {
+			color: var(--bg-deep);
+			box-shadow: 0 0 40px rgba(0, 212, 255, 0.4);
+		}
+
+		.submit-btn:hover::before {
+			left: 0;
+		}
+
+		.submit-btn:disabled {
+			opacity: 0.4;
+			cursor: default;
+			color: var(--neon-blue);
+		}
+
+		.submit-btn:disabled::before {
+			left: -100%;
+		}
+
+		.char-meter {
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 11px;
+			color: var(--text-dim);
+			letter-spacing: 1px;
+			white-space: nowrap;
+		}
+
+		.ai-loading {
+			display: none;
+			padding: 48px;
+			text-align: center;
+			border: 1px solid var(--border-glow);
+			border-radius: 2px;
+			background: var(--bg-card);
+			margin-top: 24px;
+		}
+
+		.ai-loading.active {
+			display: block;
+		}
+
+		.loading-title {
+			font-family: 'Orbitron', monospace;
+			font-size: 14px;
+			letter-spacing: 4px;
+			color: var(--neon-blue);
+			margin-bottom: 24px;
+		}
+
+		.loading-bars {
+			display: flex;
+			justify-content: center;
+			gap: 6px;
+			margin-bottom: 20px;
+		}
+
+		.loading-bar {
+			width: 4px;
+			height: 32px;
+			background: var(--neon-blue);
+			border-radius: 2px;
+			animation: loadBar 1.2s ease-in-out infinite;
+			opacity: 0.3;
+		}
+
+		.loading-bar:nth-child(1) {
+			animation-delay: 0s
+		}
+
+		.loading-bar:nth-child(2) {
+			animation-delay: 0.15s
+		}
+
+		.loading-bar:nth-child(3) {
+			animation-delay: 0.3s
+		}
+
+		.loading-bar:nth-child(4) {
+			animation-delay: 0.45s
+		}
+
+		.loading-bar:nth-child(5) {
+			animation-delay: 0.6s
+		}
+
+		@keyframes loadBar {
+
+			0%,
+			100% {
+				transform: scaleY(0.3);
+				opacity: 0.3
+			}
+
+			50% {
+				transform: scaleY(1);
+				opacity: 1;
+				box-shadow: 0 0 12px var(--neon-blue)
+			}
+		}
+
+		.loading-step {
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 11px;
+			letter-spacing: 2px;
+			color: var(--text-muted);
+		}
+
+		.ai-result {
+			display: none;
+			margin-top: 24px;
+			opacity: 0;
+			transform: translateY(20px);
+			transition: opacity 0.6s, transform 0.6s;
+		}
+
+		.ai-result.active {
+			display: block;
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		.result-header {
+			display: flex;
+			align-items: stretch;
+			gap: 0;
+			border: 1px solid;
+			border-radius: 2px;
+			overflow: hidden;
+			margin-bottom: 20px;
+		}
+
+		.result-level-bar {
+			width: 6px;
+			flex-shrink: 0;
+		}
+
+		.result-header-inner {
+			flex: 1;
+			padding: 20px 24px;
+			display: flex;
+			align-items: center;
+			gap: 20px;
+		}
+
+		.result-badge {
+			font-family: 'Orbitron', monospace;
+			font-size: 11px;
+			font-weight: 700;
+			letter-spacing: 3px;
+			padding: 6px 14px;
+			border-radius: 2px;
+			text-transform: uppercase;
+			white-space: nowrap;
+		}
+
+		.result-title-block {
+			flex: 1;
+		}
+
+		.result-threat-name {
+			font-family: 'Orbitron', monospace;
+			font-size: 18px;
+			font-weight: 700;
+			letter-spacing: 2px;
+			margin-bottom: 4px;
+		}
+
+		.result-meta {
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 11px;
+			color: var(--text-muted);
+			letter-spacing: 2px;
+		}
+
+		.result-body {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 16px;
+			margin-bottom: 16px;
+		}
+
+		.result-card {
+			background: rgba(0, 212, 255, 0.03);
+			border: 1px solid var(--border-glow);
+			border-radius: 2px;
+			padding: 20px;
+		}
+
+		.result-card.full {
+			grid-column: 1 / -1;
+		}
+
+		.result-card-label {
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 9px;
+			letter-spacing: 4px;
+			color: var(--neon-blue);
+			text-transform: uppercase;
+			margin-bottom: 12px;
+			padding-bottom: 8px;
+			border-bottom: 1px solid var(--border-glow);
+		}
+
+		.result-card-text {
+			font-size: 14px;
+			line-height: 1.7;
+			color: rgba(224, 240, 255, 0.8);
+			font-weight: 300;
+		}
+
+		.result-steps {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+		}
+
+		.result-step {
+			display: flex;
+			gap: 14px;
+			align-items: flex-start;
+		}
+
+		.step-num {
+			font-family: 'Orbitron', monospace;
+			font-size: 11px;
+			font-weight: 700;
+			color: var(--neon-blue);
+			min-width: 28px;
+			padding-top: 1px;
+		}
+
+		.step-text {
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 12px;
+			line-height: 1.6;
+			color: rgba(224, 240, 255, 0.75);
+			letter-spacing: 0.5px;
+		}
+
+		.result-tags {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px;
+		}
+
+		.result-tag {
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 10px;
+			letter-spacing: 2px;
+			padding: 5px 12px;
+			border: 1px solid var(--border-glow);
+			border-radius: 2px;
+			color: var(--text-muted);
+			background: rgba(0, 212, 255, 0.04);
+		}
+
+		.level-green .result-level-bar {
+			background: var(--neon-green);
+			box-shadow: 4px 0 20px rgba(0, 255, 136, 0.3);
+		}
+
+		.level-green {
+			border-color: rgba(0, 255, 136, 0.3);
+		}
+
+		.level-green .result-badge {
+			background: rgba(0, 255, 136, 0.1);
+			color: var(--neon-green);
+			border: 1px solid rgba(0, 255, 136, 0.4);
+		}
+
+		.level-green .result-threat-name {
+			color: var(--neon-green);
+		}
+
+		.level-yellow .result-level-bar {
+			background: var(--neon-yellow);
+			box-shadow: 4px 0 20px rgba(255, 204, 0, 0.3);
+		}
+
+		.level-yellow {
+			border-color: rgba(255, 204, 0, 0.3);
+		}
+
+		.level-yellow .result-badge {
+			background: rgba(255, 204, 0, 0.1);
+			color: var(--neon-yellow);
+			border: 1px solid rgba(255, 204, 0, 0.4);
+		}
+
+		.level-yellow .result-threat-name {
+			color: var(--neon-yellow);
+		}
+
+		.level-red .result-level-bar {
+			background: var(--neon-red);
+			box-shadow: 4px 0 20px rgba(255, 51, 102, 0.3);
+		}
+
+		.level-red {
+			border-color: rgba(255, 51, 102, 0.3);
+		}
+
+		.level-red .result-badge {
+			background: rgba(255, 51, 102, 0.1);
+			color: var(--neon-red);
+			border: 1px solid rgba(255, 51, 102, 0.4);
+			animation: badgeBlink 1s infinite;
+		}
+
+		.level-red .result-threat-name {
+			color: var(--neon-red);
+		}
+
+		@keyframes badgeBlink {
+
+			0%,
+			100% {
+				opacity: 1
+			}
+
+			50% {
+				opacity: 0.6
+			}
+		}
+
+		.reset-btn {
+			margin-top: 16px;
+			background: transparent;
+			border: 1px solid var(--border-glow);
+			color: var(--text-muted);
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 11px;
+			letter-spacing: 3px;
+			padding: 10px 20px;
+			cursor: pointer;
+			border-radius: 2px;
+			text-transform: uppercase;
+			transition: all 0.2s;
+		}
+
+		.reset-btn:hover {
+			border-color: var(--neon-blue);
+			color: var(--neon-blue);
+		}
+
+		.log-section {
+			padding: 40px 0 100px;
+		}
+
+		.log-list {
+			display: flex;
+			flex-direction: column;
+			gap: 12px;
+		}
+
+		.log-entry {
+			display: flex;
+			gap: 16px;
+			align-items: flex-start;
+			padding: 16px 20px;
+			background: rgba(0, 212, 255, 0.02);
+			border: 1px solid rgba(0, 212, 255, 0.08);
+			border-radius: 2px;
+			border-left: 3px solid;
+			animation: entryIn 0.4s ease;
+			transition: border-color 0.2s, background 0.2s;
+		}
+
+		.log-entry:hover {
+			background: rgba(0, 212, 255, 0.05);
+		}
+
+		@keyframes entryIn {
+			from {
+				opacity: 0;
+				transform: translateX(-10px)
+			}
+
+			to {
+				opacity: 1;
+				transform: translateX(0)
+			}
+		}
+
+		.log-entry.green {
+			border-left-color: var(--neon-green);
+		}
+
+		.log-entry.yellow {
+			border-left-color: var(--neon-yellow);
+		}
+
+		.log-entry.red {
+			border-left-color: var(--neon-red);
+		}
+
+		.log-time {
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 10px;
+			color: var(--text-dim);
+			letter-spacing: 1px;
+			white-space: nowrap;
+			padding-top: 2px;
+		}
+
+		.log-content {
+			flex: 1;
+		}
+
+		.log-name {
+			font-family: 'Orbitron', monospace;
+			font-size: 11px;
+			font-weight: 700;
+			letter-spacing: 2px;
+			margin-bottom: 4px;
+		}
+
+		.log-name.green {
+			color: var(--neon-green);
+		}
+
+		.log-name.yellow {
+			color: var(--neon-yellow);
+		}
+
+		.log-name.red {
+			color: var(--neon-red);
+		}
+
+		.log-text {
+			font-size: 13px;
+			color: rgba(224, 240, 255, 0.5);
+			line-height: 1.5;
+		}
+
+		.log-badge {
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 9px;
+			letter-spacing: 2px;
+			padding: 3px 8px;
+			border-radius: 2px;
+			text-transform: uppercase;
+			white-space: nowrap;
+		}
+
+		.log-badge.green {
+			background: rgba(0, 255, 136, 0.1);
+			color: var(--neon-green);
+		}
+
+		.log-badge.yellow {
+			background: rgba(255, 204, 0, 0.1);
+			color: var(--neon-yellow);
+		}
+
+		.log-badge.red {
+			background: rgba(255, 51, 102, 0.1);
+			color: var(--neon-red);
+		}
+
+		.log-empty {
+			text-align: center;
+			padding: 40px;
+			font-family: 'Share Tech Mono', monospace;
+			font-size: 12px;
+			letter-spacing: 3px;
+			color: var(--text-dim);
+			border: 1px dashed rgba(0, 212, 255, 0.1);
+			border-radius: 2px;
+		}
+
+		@keyframes fadeUp {
+			from {
+				opacity: 0;
+				transform: translateY(24px)
+			}
+
+			to {
+				opacity: 1;
+				transform: translateY(0)
+			}
+		}
+
+		@media(max-width:768px) {
+			.form-grid {
+				grid-template-columns: 1fr
+			}
+
+			.result-body {
+				grid-template-columns: 1fr
+			}
+
+			.threat-selector {
+				grid-template-columns: 1fr
+			}
+
+			.topbar {
+				padding: 12px 20px
+			}
+
+			.hero-stats {
+				gap: 20px
+			}
+
+			.hero-stat-sep {
+				display: none
+			}
+		}
+	</style>
+</head>
+
+<body>
+
+	<div class="scanlines"></div>
+	<div class="cursor" id="cursor"></div>
+	<div class="cursor-dot" id="cursorDot"></div>
+
+	<!-- TOP BAR -->
+	<div class="topbar">
+		<div class="topbar-logo">
+			<div class="topbar-logo-mark">STEP</div>
+			<div class="topbar-logo-sep"></div>
+			<div class="topbar-logo-sub">Nexus Response</div>
+		</div>
+		<div class="topbar-right">
+			<div class="topbar-alert">
+				<div class="status-dot"></div>
+				<span>ТРИВОГА АКТИВНА</span>
+			</div>
+			<div class="topbar-time" id="topbarTime">--:--:--</div>
+		</div>
+	</div>
+
+	<!-- ======== HERO ======== -->
+	<section class="hero">
+
+		<!-- Video/canvas background -->
+		<div class="hero-video-wrap">
+			<video id="heroBgVideo" autoplay muted loop playsinline src="d_c_final_videomp_.mp4"
+				style="display:block"></video>
+			<canvas id="bgCanvas" style="opacity:0"></canvas>
+		</div>
+
+		<!-- Overlays -->
+		<div class="hero-overlay-top"></div>
+		<div class="hero-overlay-bottom"></div>
+		<div class="hero-overlay-sides"></div>
+		<div class="hero-chroma-line"></div>
+
+		<!-- Content -->
+		<div class="hero-content">
+			<div class="hero-eyebrow">
+				<div class="hero-eyebrow-line"></div>
+				АКАДЕМІЯ ПІД ЗАГРОЗОЮ · 2026
+				<div class="hero-eyebrow-line right"></div>
+			</div>
+			<div class="hero-academy">STEP ACADEMY</div>
+			<h1 class="hero-title">
+				<span class="hero-title-main" data-text="NEXUS">NEXUS</span>
+				<span class="hero-title-sub">EMERGENCY RESPONSE</span>
+			</h1>
+			<p class="hero-subtitle">
+				АКАДЕМІЮ АТАКОВАНО.<br>
+				КУРСАНТЕ — ВВЕДИ РАПОРТ.<br>
+				AI ПРОАНАЛІЗУЄ І ВИДАСТЬ НАКАЗ.
+			</p>
+			<div class="hero-cta-row">
+				<button class="hero-cta-primary"
+					onclick="document.getElementById('reportForm').scrollIntoView({behavior:'smooth'})">
+					▶ ПОДАТИ РАПОРТ
+				</button>
+				<button class="hero-cta-secondary"
+					onclick="document.getElementById('logSection').scrollIntoView({behavior:'smooth'})">
+					ЖУРНАЛ ПОДІЙ
+				</button>
+			</div>
+		</div>
+
+		<!-- Stats -->
+		<div class="hero-stats">
+			<div class="hero-stat">
+				<div class="hero-stat-num" id="statReports">0</div>
+				<div class="hero-stat-label">Рапортів надійшло</div>
+			</div>
+			<div class="hero-stat-sep"></div>
+			<div class="hero-stat">
+				<div class="hero-stat-num">ЗОНА 3</div>
+				<div class="hero-stat-label">Локація академії</div>
+			</div>
+			<div class="hero-stat-sep"></div>
+			<div class="hero-stat">
+				<div class="hero-stat-num" style="color:var(--neon-red)">ЧЕРВОНА</div>
+				<div class="hero-stat-label">Готовність</div>
+			</div>
+		</div>
+
+		<!-- Scroll hint -->
+		<div class="hero-scroll">
+			<div class="scroll-arrow"></div>
+		</div>
+
+	</section>
+
+	<!-- ======== BELOW HERO ======== -->
+	<div class="below-hero">
+		<div class="wrapper">
+
+			<!-- FORM -->
+			<section class="form-section" id="reportForm">
+				<div class="section-divider" data-label="рапорт курсанта" style="margin-bottom:48px"></div>
+				<div class="section-tag">// введення даних</div>
+				<h2 class="section-title">ПОДАТИ РАПОРТ</h2>
+
+				<div class="form-grid">
+					<div class="field-group">
+						<label class="field-label"><span class="field-label-num">01</span> КУРСАНТ</label>
+						<input class="field-input" id="inputName" type="text" placeholder="Ім'я та позивний" maxlength="40">
+					</div>
+					<div class="field-group">
+						<label class="field-label"><span class="field-label-num">02</span> ПІДРОЗДІЛ</label>
+						<select class="field-select" id="inputUnit">
+							<option value="">Оберіть підрозділ</option>
+							<option>Розвідка</option>
+							<option>Охорона периметру</option>
+							<option>Медична служба</option>
+							<option>Кібербезпека</option>
+							<option>Оперативний резерв</option>
+							<option>Командний центр</option>
+						</select>
+					</div>
+					<div class="field-group">
+						<label class="field-label"><span class="field-label-num">03</span> ПЕРВИННА ОЦІНКА</label>
+						<div class="threat-selector">
+							<div class="threat-btn green" onclick="selectThreat('green',this)">🟢 НИЗЬКА</div>
+							<div class="threat-btn yellow" onclick="selectThreat('yellow',this)">🟡 СЕРЕДНЯ</div>
+							<div class="threat-btn red" onclick="selectThreat('red',this)">🔴 ВИСОКА</div>
+						</div>
+					</div>
+					<div class="field-group">
+						<label class="field-label"><span class="field-label-num">04</span> ЛОКАЦІЯ</label>
+						<select class="field-select" id="inputLocation">
+							<option value="">Оберіть локацію</option>
+							<option>Головний корпус</option>
+							<option>Східне крило</option>
+							<option>Периметр</option>
+							<option>Підземний рівень</option>
+							<option>Сервер-кімната</option>
+							<option>Навчальні зали</option>
+							<option>Зовнішня територія</option>
+						</select>
+					</div>
+					<div class="field-group full">
+						<label class="field-label"><span class="field-label-num">05</span> ОПИС СИТУАЦІЇ</label>
+						<textarea class="field-textarea" id="inputSituation" placeholder="Детально опиши що відбувається..."
+							maxlength="600" oninput="updateChar()"></textarea>
+					</div>
+				</div>
+
+				<div class="submit-row">
+					<button class="submit-btn" id="submitBtn" onclick="submitReport()">ВІДПРАВИТИ РАПОРТ</button>
+					<span class="char-meter" id="charMeter">0 / 600</span>
+				</div>
+
+				<div class="ai-loading" id="aiLoading">
+					<div class="loading-title">NEXUS AI · АНАЛІЗ</div>
+					<div class="loading-bars">
+						<div class="loading-bar"></div>
+						<div class="loading-bar"></div>
+						<div class="loading-bar"></div>
+						<div class="loading-bar"></div>
+						<div class="loading-bar"></div>
+					</div>
+					<div class="loading-step" id="loadingStep">Ініціалізація...</div>
+				</div>
+				<div class="ai-result" id="aiResult"></div>
+			</section>
+
+			<!-- LOG -->
+			<section class="log-section" id="logSection">
+				<div class="section-divider" data-label="журнал подій" style="margin-bottom:48px"></div>
+				<div class="section-tag">// архів рапортів</div>
+				<h2 class="section-title">ЖУРНАЛ ПОДІЙ</h2>
+				<div class="log-list" id="logList"></div>
+			</section>
+
+		</div>
+	</div>
+
+	<script>
+		// CURSOR
+		const cursor = document.getElementById('cursor'), cursorDot = document.getElementById('cursorDot');
+		let mx = 0, my = 0, cx = 0, cy = 0;
+		document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cursorDot.style.left = mx + 'px'; cursorDot.style.top = my + 'px'; });
+		(function a() { cx += (mx - cx) * 0.12; cy += (my - cy) * 0.12; cursor.style.left = cx + 'px'; cursor.style.top = cy + 'px'; requestAnimationFrame(a); })();
+
+		// CLOCK
+		function tick() { document.getElementById('topbarTime').textContent = new Date().toTimeString().slice(0, 8); }
+		setInterval(tick, 1000); tick();
+
+		// CANVAS FALLBACK
+		const canvas = document.getElementById('bgCanvas');
+		const ctx = canvas.getContext('2d');
+		let W, H, particles = [];
+		function resize() { W = canvas.width = canvas.offsetWidth; H = canvas.height = canvas.offsetHeight; }
+		resize(); window.addEventListener('resize', resize);
+
+		class P {
+			constructor() { this.reset(); }
+			reset() {
+				this.x = Math.random() * W; this.y = Math.random() * H;
+				this.vx = (Math.random() - .5) * .4; this.vy = (Math.random() - .5) * .4;
+				this.r = Math.random() * 1.5 + .5;
+				this.op = Math.random() * .5 + .1;
+				this.col = Math.random() > .7 ? '#a855f7' : '#00d4ff';
+			}
+			update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.reset(); }
+			draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2); ctx.fillStyle = this.col; ctx.globalAlpha = this.op; ctx.fill(); }
+		}
+		for (let i = 0; i < 120; i++)particles.push(new P());
+		let scanY = 0;
+		function drawGrid() {
+			ctx.globalAlpha = .035; ctx.strokeStyle = '#00d4ff'; ctx.lineWidth = 1;
+			for (let x = 0; x < W; x += 80) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+			for (let y = 0; y < H; y += 80) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+		}
+		function animCanvas() {
+			ctx.clearRect(0, 0, W, H);
+			const g = ctx.createRadialGradient(W / 2, H * .4, 0, W / 2, H * .4, W * .7);
+			g.addColorStop(0, 'rgba(168,85,247,0.1)'); g.addColorStop(.5, 'rgba(0,212,255,0.05)'); g.addColorStop(1, 'transparent');
+			ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+			drawGrid();
+			ctx.lineWidth = .5;
+			for (let i = 0; i < particles.length; i++)for (let j = i + 1; j < particles.length; j++) {
+				const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y, d = Math.sqrt(dx * dx + dy * dy);
+				if (d < 100) { ctx.globalAlpha = (1 - d / 100) * .15; ctx.strokeStyle = '#00d4ff'; ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.stroke(); }
+			}
+			particles.forEach(p => { p.update(); p.draw(); });
+			scanY = (scanY + .8) % H;
+			const sg = ctx.createLinearGradient(0, scanY - 40, 0, scanY + 40);
+			sg.addColorStop(0, 'transparent'); sg.addColorStop(.5, 'rgba(0,212,255,0.05)'); sg.addColorStop(1, 'transparent');
+			ctx.globalAlpha = 1; ctx.fillStyle = sg; ctx.fillRect(0, scanY - 40, W, 80);
+			requestAnimationFrame(animCanvas);
+		}
+		animCanvas();
+
+		// FORM
+		let selectedThreat = '';
+		function selectThreat(l, el) { document.querySelectorAll('.threat-btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); selectedThreat = l; }
+		function updateChar() { document.getElementById('charMeter').textContent = document.getElementById('inputSituation').value.length + ' / 600'; }
+
+		// LOG
+		function getLog() { try { return JSON.parse(localStorage.getItem('nexus_log') || '[]'); } catch { return []; } }
+		function saveLog(l) { try { localStorage.setItem('nexus_log', JSON.stringify(l.slice(0, 20))); } catch { } }
+		function renderLog() {
+			const log = getLog();
+			document.getElementById('statReports').textContent = log.length;
+			const el = document.getElementById('logList');
+			if (!log.length) { el.innerHTML = '<div class="log-empty">[ ЖУРНАЛ ПОРОЖНІЙ — РАПОРТІВ НЕ НАДХОДИЛО ]</div>'; return; }
+			el.innerHTML = log.map(e => `
+    <div class="log-entry ${e.level}">
+      <div class="log-time">${e.time}</div>
+      <div class="log-content">
+        <div class="log-name ${e.level}">${e.name} · ${e.unit}</div>
+        <div class="log-text">${e.situation.slice(0, 100)}${e.situation.length > 100 ? '...' : ''}</div>
+      </div>
+      <div class="log-badge ${e.level}">${e.levelLabel}</div>
+    </div>`).join('');
+		}
+		renderLog();
+
+		// ==========================================
+		// SUBMIT (ОНОВЛЕНА СИМУЛЯЦІЯ ДЛЯ V1 ДИЗАЙНУ)
+		// ==========================================
+		const STEPS = ['Ініціалізація протоколу аналізу...', 'Розпізнавання маркерів загрози...', 'Оцінка рівня небезпеки...', 'Генерація тактичних інструкцій...', 'Формування рапорту NEXUS...'];
+
+		function submitReport() {
+			const name = document.getElementById('inputName').value.trim();
+			const unit = document.getElementById('inputUnit').value;
+			const loc = document.getElementById('inputLocation').value;
+			const sit = document.getElementById('inputSituation').value.trim();
+
+			if (!name || !unit || !sit || !selectedThreat) {
+				alert('Заповни всі поля та обери рівень загрози!');
+				return;
+			}
+
+			document.getElementById('submitBtn').disabled = true;
+			document.getElementById('aiLoading').classList.add('active');
+			document.getElementById('aiResult').classList.remove('active');
+			document.getElementById('loadingStep').textContent = STEPS[0];
+
+			let step = 0;
+			const si = setInterval(() => {
+				step++;
+				if (step < STEPS.length) {
+					document.getElementById('loadingStep').textContent = STEPS[step];
+				}
+			}, 700);
+
+			// Симуляція затримки на "обдумування" (3.5 секунди)
+			setTimeout(() => {
+				clearInterval(si);
+				document.getElementById('aiLoading').classList.remove('active');
+
+				const lvl = selectedThreat;
+				const LL = { green: 'ЗАГРОЗА: НИЗЬКА', yellow: 'ЗАГРОЗА: СЕРЕДНЯ', red: 'ЗАГРОЗА: КРИТИЧНА' };
+				const LS = { green: 'НИЗЬКА', yellow: 'СЕРЕДНЯ', red: 'КРИТИЧНА' };
+
+				let threatName, urgency, analysis, mission, keywords, stepsHtml;
+
+				if (lvl === 'red') {
+					threatName = 'КРИТИЧНИЙ ПРОРИВ СЕКТОРА';
+					urgency = 'КРИТИЧНА';
+					analysis = 'Виявлено множинні несанкціоновані проникнення. Системи захисту скомпрометовано. Ймовірність ворожого захоплення: 87%.';
+					mission = 'НЕГАЙНА ЕВАКУАЦІЯ ПЕРСОНАЛУ ТА БЛОКУВАННЯ ВУЗЛІВ.';
+					keywords = ['ПРОРИВ', 'ВТРАТА КОНТРОЛЮ', 'БЛОКУВАННЯ'];
+					stepsHtml = '<div class="result-step"><span class="step-num">01</span><span class="step-text">Активувати протокол "Глуха оборона".</span></div><div class="result-step"><span class="step-num">02</span><span class="step-text">Знеструмити ліфти та заблокувати сходи.</span></div><div class="result-step"><span class="step-num">03</span><span class="step-text">Очікувати прибуття ударного загону "Альфа".</span></div>';
+				} else if (lvl === 'yellow') {
+					threatName = 'ПІДОЗРІЛА АКТИВНІСТЬ';
+					urgency = 'СЕРЕДНЯ';
+					analysis = 'Зафіксовано аномалії в роботі систем або переміщення невідомих осіб. Прямої загрози життю наразі немає, але потрібна перевірка.';
+					mission = 'РОЗВІДКА ТА ПОСИЛЕННЯ ПАТРУЛЮВАННЯ ЗОНИ.';
+					keywords = ['АНОМАЛІЯ', 'ПЕРЕВІРКА', 'ПАТРУЛЬ'];
+					stepsHtml = '<div class="result-step"><span class="step-num">01</span><span class="step-text">Здійснити обхід вказаного сектора у складі групи з 2-х осіб.</span></div><div class="result-step"><span class="step-num">02</span><span class="step-text">Перевірити цілісність камер спостереження.</span></div><div class="result-step"><span class="step-num">03</span><span class="step-text">Доповісти в командний центр за 10 хвилин.</span></div>';
+				} else {
+					threatName = 'СТАНДАРТНИЙ ІНЦИДЕНТ';
+					urgency = 'НИЗЬКА';
+					analysis = 'Ситуація класифікована як штатна. Жодних ознак цілеспрямованої атаки або диверсії не виявлено.';
+					mission = 'УСУНУТИ НАСЛІДКИ ТА ПОВЕРНУТИСЬ НА ПОЗИЦІЮ.';
+					keywords = ['ШТАТНО', 'МОНІТОРИНГ'];
+					stepsHtml = '<div class="result-step"><span class="step-num">01</span><span class="step-text">Зафіксувати інцидент у внутрішньому протоколі.</span></div><div class="result-step"><span class="step-num">02</span><span class="step-text">Продовжувати стандартне патрулювання.</span></div>';
+				}
+
+				document.getElementById('aiResult').innerHTML = `
+      <div class="result-header level-${lvl}">
+        <div class="result-level-bar"></div>
+        <div class="result-header-inner">
+          <div class="result-badge">${LL[lvl]}</div>
+          <div class="result-title-block">
+            <div class="result-threat-name">${threatName}</div>
+            <div class="result-meta">${name} · ${unit} · ТЕРМІНОВІСТЬ: ${urgency}</div>
+          </div>
+        </div>
+      </div>
+      <div class="result-body">
+        <div class="result-card full"><div class="result-card-label">// аналіз NEXUS</div><div class="result-card-text">${analysis}</div></div>
+        <div class="result-card"><div class="result-card-label">// місія</div><div class="result-card-text" style="font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:1px">${mission}</div></div>
+        <div class="result-card"><div class="result-card-label">// маркери</div><div class="result-tags">${keywords.map(k => `<div class="result-tag">${k}</div>`).join('')}</div></div>
+        <div class="result-card full"><div class="result-card-label">// тактичні інструкції</div><div class="result-steps">${stepsHtml}</div></div>
+      </div>
+      <button class="reset-btn" onclick="resetForm()">← НОВИЙ РАПОРТ</button>`;
+
+				setTimeout(() => document.getElementById('aiResult').classList.add('active'), 50);
+
+				const log = getLog();
+				log.unshift({ time: new Date().toLocaleTimeString('uk-UA'), name, unit, situation: sit, level: lvl, levelLabel: LS[lvl], threat: threatName });
+				saveLog(log);
+				renderLog();
+
+				document.getElementById('submitBtn').disabled = false;
+				document.getElementById('aiResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+			}, 3500); // Кінець таймера
+		}
+
+		function resetForm() {
+			['inputName', 'inputSituation'].forEach(id => document.getElementById(id).value = '');
+			['inputUnit', 'inputLocation'].forEach(id => document.getElementById(id).value = '');
+			document.getElementById('charMeter').textContent = '0 / 600';
+			selectedThreat = '';
+			document.querySelectorAll('.threat-btn').forEach(b => b.classList.remove('active'));
+			document.getElementById('aiResult').classList.remove('active');
+			setTimeout(() => document.getElementById('aiResult').style.display = 'none', 600);
+			document.getElementById('reportForm').scrollIntoView({ behavior: 'smooth' });
+		}
+	</script>
+</body>
+
+</html>
